@@ -1,4 +1,5 @@
 import { Product, CategoryMeta } from '../types'
+import { ensureProductSlug } from '../lib/slug'
 
 export const CATEGORIES_DATA: CategoryMeta[] = [
   {
@@ -91,7 +92,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
   },
 ]
 
-export const PRODUCTS_CATALOG: Product[] = [
+const RAW_PRODUCTS_CATALOG: any[] = [
   // --- TOP POPULAR PRODUCTS (MATCHING SCREENSHOT 3 & 2) ---
   {
     id: 'pb-sub-netflix',
@@ -808,6 +809,19 @@ export const PRODUCTS_CATALOG: Product[] = [
     features: ['Compatible with Smart TVs, Android Box, Magcubic Projectors, Apple TV, Firestick', 'EPG TV Guide with 7-day catch-up', 'Zero buffering high-speed CDN'],
   },
 ]
+
+export const PRODUCTS_CATALOG: Product[] = RAW_PRODUCTS_CATALOG.map((item) => ({
+  ...item,
+  slug: item.slug || ensureProductSlug(item),
+  shortDescription: item.shortDescription || item.description?.slice(0, 120) + (item.description?.length > 120 ? '...' : ''),
+  productType: item.digital !== false ? 'digital' : 'physical',
+  status: item.stock > 0 ? 'in_stock' : 'out_of_stock',
+  active: item.active !== undefined ? item.active : true,
+  featured: item.featured !== undefined ? item.featured : Boolean(item.isFeatured),
+  deliveryInfo: item.deliveryInfo || (item.digital !== false ? 'Instant 15-Second Automated Key Delivery via Email & Cloud Dashboard' : 'Inspected & Dispatched via Express Courier with Real-Time Tracking (1-3 Days)'),
+  gallery: item.gallery || item.galleryImages || (item.image ? [item.image] : []),
+  additionalImages: item.additionalImages || item.galleryImages || [],
+}))
 
 export const TESTIMONIALS_DATA = [
   {
