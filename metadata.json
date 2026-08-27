@@ -1,0 +1,6 @@
+{
+  "name": "PlayBeat Digital Marketplace & Projector Hub",
+  "description": "Premium digital marketplace and smart 4K projector store with Color Admin inspired Product Insights, executive revenue analytics, real-time license inventory vault, multi-currency pricing, and instant automated delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
