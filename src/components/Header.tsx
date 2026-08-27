@@ -153,6 +153,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             Support
           </button>
+          {onOpenAdmin && (
+            <button
+              id="header-admin-nav-btn"
+              onClick={onOpenAdmin}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border border-amber-400/30 text-amber-300 hover:text-white hover:border-amber-400/60 font-semibold text-xs transition shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Admin Console</span>
+            </button>
+          )}
         </nav>
 
         {/* Live Search Input (Matching Search Bar with Hotkey) */}

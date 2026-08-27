@@ -46,9 +46,13 @@ import {
   X,
   ExternalLink,
   ChevronLeft,
+  FileSpreadsheet,
+  UploadCloud,
+  Database,
 } from 'lucide-react'
 import { Product, CurrencyCode } from '../types'
 import { formatPrice } from '../lib/currency'
+import { CsvImporterModal } from './CsvImporterModal'
 
 interface AdminInsightsViewProps {
   products: Product[]
@@ -57,6 +61,11 @@ interface AdminInsightsViewProps {
   onQuickViewProduct: (product: Product) => void
   onUpdateProductStock?: (productId: string, newStock: number) => void
   onUpdateProductPrice?: (productId: string, newPrice: number) => void
+  onImportProducts?: (
+    newProducts: Product[],
+    mode: 'merge' | 'replace',
+    syncToMongo?: boolean
+  ) => void
 }
 
 interface OrderItem {
@@ -147,6 +156,7 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
   onQuickViewProduct,
   onUpdateProductStock,
   onUpdateProductPrice,
+  onImportProducts,
 }) => {
   // Navigation & Sub-views
   const [activeNav, setActiveNav] = useState<string>('dashboard')
@@ -162,6 +172,7 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
 
   // Modals & Drawers
   const [showAddProductModal, setShowAddProductModal] = useState(false)
+  const [showCsvImporterModal, setShowCsvImporterModal] = useState(false)
   const [showQuickAddMenu, setShowQuickAddMenu] = useState(false)
   const [showCampaignModal, setShowCampaignModal] = useState(false)
   const [showSupportModal, setShowSupportModal] = useState(false)
@@ -385,6 +396,21 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
                   </button>
 
                   <button
+                    onClick={() => setShowCsvImporterModal(true)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-zinc-400 hover:text-amber-300 hover:bg-amber-400/10 transition group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition" />
+                      {!sidebarCollapsed && <span>CSV Importer & Sync</span>}
+                    </div>
+                    {!sidebarCollapsed && (
+                      <span className="px-1.5 py-0.5 rounded bg-amber-400/15 border border-amber-400/30 text-amber-300 font-mono text-[9px] font-bold">
+                        Import
+                      </span>
+                    )}
+                  </button>
+
+                  <button
                     onClick={() => setActiveNav('vault')}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition ${
                       activeNav === 'vault' ? 'text-amber-400 bg-amber-400/10' : ''
@@ -596,6 +622,16 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
                     </button>
                     <button
                       onClick={() => {
+                        setShowCsvImporterModal(true)
+                        setShowQuickAddMenu(false)
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 text-zinc-300 hover:text-white flex items-center gap-2"
+                    >
+                      <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Import Products (CSV/DB)</span>
+                    </button>
+                    <button
+                      onClick={() => {
                         setShowLicenseKeyModal(true)
                         setShowQuickAddMenu(false)
                       }}
@@ -656,748 +692,1024 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
           {/* ========================================================================= */}
           {/* CONTENT ROUTER */}
           {/* ========================================================================= */}
-          <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
-            {/* VIEW 1: DASHBOARD OVERVIEW */}
+          <main className="p-6 space-y-6 max-w-[1600px] w-full mx-auto">
+            {/* VIEW 1: DASHBOARD OVERVIEW (8-CARD BENTO MATRIX MATCHING SCREENSHOT 1) */}
             {activeNav === 'dashboard' && (
               <div className="space-y-6">
-                {/* Greeting Row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-xl">
-                      👋
+                {/* Top Row: Cards 01 to 04 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {/* ========================================================================= */}
+                  {/* CARD 01: DASHBOARD OVERVIEW */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-blue-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 01 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-blue-600 text-white font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          01
+                        </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            DASHBOARD OVERVIEW
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Get a complete snapshot of your business at a glance.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-zinc-400">
+                        <Search className="w-3.5 h-3.5" />
+                        <div className="relative">
+                          <Bell className="w-3.5 h-3.5" />
+                          <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        </div>
+                        <div className="w-4 h-4 rounded-full bg-blue-500 text-white text-[8px] font-mono font-bold flex items-center justify-center">
+                          P
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h1 className="text-xl font-bold text-white tracking-tight">
-                        Welcome back, PlayBeat Admin!
-                      </h1>
-                      <p className="text-xs text-zinc-400">
+
+                    {/* Welcome Greeting */}
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <span>Welcome back, PlayBeat Admin!</span>
+                        <span>👋</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-400">
                         Here's what's happening with your business today.
+                      </p>
+                    </div>
+
+                    {/* Total Revenue Box */}
+                    <div className="p-3.5 rounded-xl bg-[#070A12] border border-blue-500/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                            <DollarSign className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-[11px] text-zinc-300 font-medium">Total Revenue</span>
+                        </div>
+                      </div>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xl font-black text-white font-mono">Rs 44,800</span>
+                        <span className="text-[11px] font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
+                          <ArrowUpRight className="w-3 h-3" /> 18.4% <span className="text-[9px] text-zinc-400 font-normal">vs last period</span>
+                        </span>
+                      </div>
+                      {/* Blue Sparkline */}
+                      <div className="h-5 w-full pt-1">
+                        <svg className="w-full h-full" viewBox="0 0 100 20">
+                          <path
+                            d="M0,15 Q25,18 40,8 T70,12 T100,2"
+                            fill="none"
+                            stroke="#3b82f6"
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* 3 Metric Pills */}
+                    <div className="grid grid-cols-3 gap-1.5 text-center">
+                      <div className="p-2 rounded-lg bg-[#070A12] border border-white/5">
+                        <div className="text-[9px] text-zinc-400 font-mono">Total Orders</div>
+                        <div className="text-sm font-black text-white font-mono">2</div>
+                        <div className="text-[9px] text-emerald-400 font-mono flex items-center justify-center gap-0.5">
+                          <ArrowUpRight className="w-2.5 h-2.5" /> 12.1%
+                        </div>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-[#070A12] border border-white/5">
+                        <div className="text-[9px] text-zinc-400 font-mono">Total Products</div>
+                        <div className="text-sm font-black text-white font-mono">17</div>
+                        <div className="text-[9px] text-purple-400 font-mono">↑ 17 published</div>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-[#070A12] border border-white/5">
+                        <div className="text-[9px] text-zinc-400 font-mono">Low Stock Alerts</div>
+                        <div className="text-sm font-black text-white font-mono">0</div>
+                        <div className="text-[9px] text-amber-400 font-mono">Needs attention</div>
+                      </div>
+                    </div>
+
+                    {/* Live 14-Day Performance Box */}
+                    <div className="p-3.5 rounded-xl bg-[#070A12] border border-white/5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-white">Live 14-Day Performance</span>
+                        <span className="text-[10px] font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
+                          14 Days ▾
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-black text-white font-mono">Rs 44,800</span>
+                        <span className="text-[10px] font-mono text-emerald-400 flex items-center">
+                          <ArrowUpRight className="w-3 h-3" /> 18.4% vs previous 14 days
+                        </span>
+                      </div>
+
+                      {/* Sparkline chart with dots */}
+                      <div className="h-10 w-full">
+                        <svg className="w-full h-full overflow-visible" viewBox="0 0 200 40">
+                          <path
+                            d="M0,35 Q30,30 60,25 T120,15 T160,20 T200,5"
+                            fill="none"
+                            stroke="#f59e0b"
+                            strokeWidth="2"
+                          />
+                          {[
+                            { cx: 0, cy: 35 },
+                            { cx: 30, cy: 30 },
+                            { cx: 60, cy: 25 },
+                            { cx: 90, cy: 20 },
+                            { cx: 120, cy: 15 },
+                            { cx: 160, cy: 20 },
+                            { cx: 200, cy: 5 },
+                          ].map((pt, i) => (
+                            <circle key={i} cx={pt.cx} cy={pt.cy} r="2.5" fill="#f59e0b" />
+                          ))}
+                        </svg>
+                      </div>
+
+                      <div className="flex justify-between text-[8px] font-mono text-zinc-500">
+                        <span>Aug 03</span>
+                        <span>Aug 05</span>
+                        <span>Aug 07</span>
+                        <span>Aug 09</span>
+                        <span>Aug 11</span>
+                        <span>Aug 13</span>
+                        <span>Aug 15</span>
+                        <span className="text-amber-400 font-bold">Aug 17</span>
+                      </div>
+
+                      {/* 3 mini stats below chart */}
+                      <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-white/5 text-[9px] font-mono">
+                        <div>
+                          <div className="text-zinc-500">Avg Daily Revenue</div>
+                          <div className="text-white font-bold">Rs 3,200</div>
+                          <div className="text-emerald-400">↗ 12.6%</div>
+                        </div>
+                        <div>
+                          <div className="text-zinc-500">Best Day</div>
+                          <div className="text-white font-bold">Aug 17</div>
+                          <div className="text-amber-400">Rs 6,700</div>
+                        </div>
+                        <div>
+                          <div className="text-zinc-500">Total Transactions</div>
+                          <div className="text-white font-bold">32</div>
+                          <div className="text-emerald-400">↗ 14.3%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ========================================================================= */}
+                  {/* CARD 02: REVENUE ANALYTICS */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-amber-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 02 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-amber-500 text-black font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          02
+                        </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            REVENUE ANALYTICS
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Track revenue performance and identify your best performing days.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Revenue Overview Section */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Revenue Overview</span>
+                        <span className="text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-white/5 border border-white/5">
+                          14 Days ▾
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-white font-mono">Rs 44,800</span>
+                        <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-0.5">
+                          <ArrowUpRight className="w-3 h-3" /> 18.4% vs previous 14 days
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Line Chart with Highlight Marker */}
+                    <div className="p-3.5 rounded-xl bg-[#070A12] border border-white/5 space-y-2 relative">
+                      <div className="absolute top-2 right-3 px-2 py-0.5 rounded bg-amber-400/15 border border-amber-400/30 text-[9px] font-mono font-bold text-amber-300">
+                        Aug 17 Rs 44,800
+                      </div>
+
+                      <div className="h-28 w-full pt-4">
+                        <svg className="w-full h-full overflow-visible" viewBox="0 0 240 80">
+                          <defs>
+                            <linearGradient id="goldGradient02" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
+                              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                            </linearGradient>
+                          </defs>
+
+                          {/* Grid Lines */}
+                          <line x1="0" y1="20" x2="240" y2="20" stroke="rgba(255,255,255,0.05)" strokeDasharray="2 2" />
+                          <line x1="0" y1="50" x2="240" y2="50" stroke="rgba(255,255,255,0.05)" strokeDasharray="2 2" />
+
+                          {/* Area Fill */}
+                          <path
+                            d="M0,70 Q30,65 60,50 T120,40 T180,30 T240,10 L240,80 L0,80 Z"
+                            fill="url(#goldGradient02)"
+                          />
+
+                          {/* Gold Trend Line */}
+                          <path
+                            d="M0,70 Q30,65 60,50 T120,40 T180,30 T240,10"
+                            fill="none"
+                            stroke="#fbbf24"
+                            strokeWidth="2.5"
+                          />
+
+                          {/* Data points */}
+                          {[
+                            { cx: 0, cy: 70 },
+                            { cx: 35, cy: 65 },
+                            { cx: 70, cy: 50 },
+                            { cx: 105, cy: 45 },
+                            { cx: 140, cy: 40 },
+                            { cx: 175, cy: 30 },
+                            { cx: 210, cy: 22 },
+                            { cx: 240, cy: 10 },
+                          ].map((pt, i) => (
+                            <circle key={i} cx={pt.cx} cy={pt.cy} r={i === 7 ? 4 : 2.5} fill="#fbbf24" />
+                          ))}
+                        </svg>
+                      </div>
+
+                      <div className="flex justify-between text-[8px] font-mono text-zinc-500">
+                        <span>Aug 03</span>
+                        <span>Aug 05</span>
+                        <span>Aug 07</span>
+                        <span>Aug 09</span>
+                        <span>Aug 11</span>
+                        <span>Aug 13</span>
+                        <span>Aug 15</span>
+                        <span className="text-amber-400 font-bold">Aug 17</span>
+                      </div>
+
+                      {/* 3 mini stats */}
+                      <div className="grid grid-cols-3 gap-1 pt-2 border-t border-white/5 text-[9px] font-mono">
+                        <div>
+                          <div className="text-zinc-500">Average Daily Revenue</div>
+                          <div className="text-white font-bold">Rs 3,200</div>
+                          <div className="text-emerald-400">↗ 12.6%</div>
+                        </div>
+                        <div>
+                          <div className="text-zinc-500">Best Day</div>
+                          <div className="text-white font-bold">Aug 17</div>
+                          <div className="text-amber-400">Rs 6,700</div>
+                        </div>
+                        <div>
+                          <div className="text-zinc-500">Total Transactions</div>
+                          <div className="text-white font-bold">32</div>
+                          <div className="text-emerald-400">↗ 14.3%</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Revenue Insights Callout Footer */}
+                    <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-400 text-black flex items-center justify-center shrink-0">
+                        <BarChart3 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-amber-300">Revenue Insights</div>
+                        <p className="text-[10px] text-zinc-300 leading-snug">
+                          Your revenue is up <strong className="text-emerald-400">18.4%</strong> compared to the previous 14 days. Keep up the great work!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ========================================================================= */}
+                  {/* CARD 03: ORDER & TRAFFIC INSIGHTS */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-purple-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 03 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-purple-600 text-white font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          03
+                        </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            ORDER & TRAFFIC INSIGHTS
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Understand your orders and where your traffic comes from.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Order Breakdown Donut Chart */}
+                    <div className="p-3 rounded-xl bg-[#070A12] border border-white/5 space-y-2">
+                      <div className="text-xs font-bold text-white">Order Breakdown</div>
+                      <div className="flex items-center justify-between">
+                        {/* Circular Donut */}
+                        <div className="relative flex items-center justify-center w-24 h-24">
+                          <svg className="w-24 h-24 -rotate-90">
+                            <circle
+                              cx="48"
+                              cy="48"
+                              r="36"
+                              stroke="rgba(255,255,255,0.05)"
+                              strokeWidth="9"
+                              fill="transparent"
+                            />
+                            <circle
+                              cx="48"
+                              cy="48"
+                              r="36"
+                              stroke="#3b82f6"
+                              strokeWidth="9"
+                              strokeDasharray="226.19"
+                              strokeDashoffset="0"
+                              strokeLinecap="round"
+                              fill="transparent"
+                            />
+                          </svg>
+                          <div className="absolute flex flex-col items-center">
+                            <span className="text-lg font-black text-white font-mono leading-none">2</span>
+                            <span className="text-[8px] font-mono text-zinc-400 uppercase">TOTAL</span>
+                          </div>
+                        </div>
+
+                        {/* Legend */}
+                        <div className="space-y-2 text-xs font-mono">
+                          <div className="flex items-center gap-2 text-zinc-300">
+                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <span>2 Completed</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-zinc-500">
+                            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <span>0 Pending</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Traffic Sources Progress Bars */}
+                    <div className="p-3 rounded-xl bg-[#070A12] border border-white/5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Traffic Sources</span>
+                        <span className="text-[10px] font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-white/5">
+                          This Week ▾
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 text-[10px] font-mono">
+                        {/* Direct */}
+                        <div>
+                          <div className="flex justify-between text-zinc-300 mb-0.5">
+                            <span>Direct / URL</span>
+                            <strong className="text-white">52% (1,492)</strong>
+                          </div>
+                          <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-blue-500 h-full w-[52%] rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* TikTok */}
+                        <div>
+                          <div className="flex justify-between text-zinc-300 mb-0.5">
+                            <span>TikTok Leads & Pixel</span>
+                            <strong className="text-white">28% (832)</strong>
+                          </div>
+                          <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-purple-500 h-full w-[28%] rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* Google */}
+                        <div>
+                          <div className="flex justify-between text-zinc-300 mb-0.5">
+                            <span>Organic Google Search</span>
+                            <strong className="text-white">14% (481)</strong>
+                          </div>
+                          <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-cyan-400 h-full w-[14%] rounded-full"></div>
+                          </div>
+                        </div>
+
+                        {/* Referrals */}
+                        <div>
+                          <div className="flex justify-between text-zinc-300 mb-0.5">
+                            <span>Affiliate Referrals</span>
+                            <strong className="text-white">6% (172)</strong>
+                          </div>
+                          <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-amber-400 h-full w-[6%] rounded-full"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setActiveNav('analytics')}
+                        className="w-full py-1.5 mt-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1 transition"
+                      >
+                        <span>View Full Analytics</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Footer Box */}
+                    <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] text-zinc-300 leading-snug">
+                        2 orders completed this week. Keep driving traffic from top sources!
                       </p>
                     </div>
                   </div>
 
-                  {/* Timestamp & Timeframe Filters */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-mono">
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Tuesday, Aug 25, 2026 03:12 AM (SGT)</span>
-                    </div>
-
-                    <div className="flex items-center bg-[#121622] p-1 rounded-xl border border-white/5 text-xs font-medium">
-                      {(['Today', 'This Week', 'This Month'] as const).map((filter) => (
-                        <button
-                          key={filter}
-                          onClick={() => setTimeFilter(filter)}
-                          className={`px-3 py-1 rounded-lg transition ${
-                            timeFilter === filter
-                              ? 'bg-blue-600 text-white font-semibold shadow-sm'
-                              : 'text-zinc-400 hover:text-white'
-                          }`}
-                        >
-                          {filter}
-                        </button>
-                      ))}
-                      <button
-                        onClick={() => triggerToast('Dashboard settings & widget layout saved')}
-                        className="p-1 text-zinc-400 hover:text-white ml-1"
-                      >
-                        <Settings className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4 Metric KPI Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card 1: Total Revenue */}
-                  <div className="rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-3 relative overflow-hidden shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                        Total Revenue
-                      </span>
-                      <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-                        <DollarSign className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-mono">
-                        Rs 44,800
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-xs font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
-                          <ArrowUpRight className="w-3.5 h-3.5" /> +18.4%
+                  {/* ========================================================================= */}
+                  {/* CARD 04: TOP SELLING PRODUCTS */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-orange-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 04 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-orange-600 text-white font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          04
                         </span>
-                        <span className="text-[10px] text-zinc-400 font-mono">vs last 7 days</span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            TOP SELLING PRODUCTS
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            See which products are driving the most sales.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    {/* SVG Sparkline */}
-                    <div className="h-6 w-full opacity-60">
-                      <svg className="w-full h-full" viewBox="0 0 100 20">
-                        <path
-                          d="M0,15 Q25,18 40,8 T70,12 T100,2"
-                          fill="none"
-                          stroke="#3b82f6"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    </div>
-                  </div>
 
-                  {/* Card 2: Total Orders */}
-                  <div className="rounded-2xl bg-[#0F131D] border border-amber-500/20 p-5 space-y-3 relative overflow-hidden shadow-lg">
+                    {/* Product List Header */}
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                        Total Orders
+                      <span className="text-xs font-bold text-white">Top Selling Products</span>
+                      <span className="text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-white/5 border border-white/5">
+                        This Week ▾
                       </span>
-                      <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                    </div>
+
+                    {/* 3 Top Selling Items matching Screenshot 1 */}
+                    <div className="space-y-2.5">
+                      {/* Item 1: PlayStation $50 */}
+                      <div className="p-2.5 rounded-xl bg-[#070A12] border border-white/5 flex items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-lg bg-[#003791] flex items-center justify-center p-1.5 shrink-0 shadow-md">
+                            <img src="/icons/playstation.png" alt="PS" className="w-full h-full object-contain" onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none'
+                            }} />
+                            <Package className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-white leading-tight">
+                              PlayStation Gift Card - $50 (USA)
+                            </div>
+                            <div className="text-[10px] font-mono text-zinc-400">
+                              Sales: 12
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-mono font-black text-white">
+                            Rs 24,000
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Item 2: PlayStation $25 */}
+                      <div className="p-2.5 rounded-xl bg-[#070A12] border border-white/5 flex items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-lg bg-[#0070d1] flex items-center justify-center p-1.5 shrink-0 shadow-md">
+                            <Package className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-white leading-tight">
+                              PlayStation Gift Card - $25 (USA)
+                            </div>
+                            <div className="text-[10px] font-mono text-zinc-400">
+                              Sales: 8
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-mono font-black text-white">
+                            Rs 14,000
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Item 3: Netflix */}
+                      <div className="p-2.5 rounded-xl bg-[#070A12] border border-white/5 flex items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-lg bg-[#E50914] flex items-center justify-center p-1.5 shrink-0 shadow-md font-black text-white text-xs font-mono">
+                            N
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-white leading-tight">
+                              Netflix Premium 1 Month
+                            </div>
+                            <div className="text-[10px] font-mono text-zinc-400">
+                              Sales: 5
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-mono font-black text-white">
+                            Rs 6,800
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Tip */}
+                    <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
                         <ShoppingCart className="w-4 h-4" />
                       </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-mono">
-                        2
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-xs font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
-                          <ArrowUpRight className="w-3.5 h-3.5" /> +12.1%
-                        </span>
-                        <span className="text-[10px] text-zinc-400 font-mono">vs last week</span>
-                      </div>
-                    </div>
-                    <div className="h-6 w-full opacity-60">
-                      <svg className="w-full h-full" viewBox="0 0 100 20">
-                        <path
-                          d="M0,18 Q30,12 55,15 T100,5"
-                          fill="none"
-                          stroke="#f59e0b"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Card 3: Total Products */}
-                  <div className="rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-3 relative overflow-hidden shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                        Total Products
-                      </span>
-                      <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-                        <Boxes className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-mono">
-                        17
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-xs font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
-                          <ArrowUpRight className="w-3.5 h-3.5" /> +6.3%
-                        </span>
-                        <span className="text-[10px] text-zinc-400 font-mono">new this week</span>
-                      </div>
-                    </div>
-                    <div className="h-6 w-full opacity-60">
-                      <svg className="w-full h-full" viewBox="0 0 100 20">
-                        <path
-                          d="M0,15 Q35,8 65,16 T100,4"
-                          fill="none"
-                          stroke="#a855f7"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Card 4: Total Customers */}
-                  <div className="rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-3 relative overflow-hidden shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                        Total Customers
-                      </span>
-                      <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
-                        <Users2 className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-mono">
-                        248
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-xs font-mono font-semibold text-emerald-400 flex items-center gap-0.5">
-                          <ArrowUpRight className="w-3.5 h-3.5" /> +9.7%
-                        </span>
-                        <span className="text-[10px] text-zinc-400 font-mono">vs last week</span>
-                      </div>
-                    </div>
-                    <div className="h-6 w-full opacity-60">
-                      <svg className="w-full h-full" viewBox="0 0 100 20">
-                        <path
-                          d="M0,12 Q30,16 60,8 T100,3"
-                          fill="none"
-                          stroke="#14b8a6"
-                          strokeWidth="2"
-                        />
-                      </svg>
+                      <p className="text-[10px] text-zinc-300 leading-snug">
+                        These products are your top performers. Consider promoting more!
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Middle Grid: Revenue Analytics + Order Breakdown + Traffic Sources */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  {/* Main Graph: Revenue & Sales Trend */}
-                  <div className="lg:col-span-7 rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <Flame className="w-4 h-4 text-amber-400" />
-                        <h3 className="font-bold text-sm text-white">
-                          Revenue & Sales Trend
-                        </h3>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center bg-[#07090E] p-1 rounded-xl border border-white/5 text-xs font-medium">
-                          {(['Revenue', 'Orders', 'Customers'] as const).map((m) => (
-                            <button
-                              key={m}
-                              onClick={() => setChartMetric(m)}
-                              className={`px-2.5 py-1 rounded-lg transition ${
-                                chartMetric === m
-                                  ? 'bg-blue-600 text-white font-semibold'
-                                  : 'text-zinc-400 hover:text-white'
-                              }`}
-                            >
-                              {m}
-                            </button>
-                          ))}
-                        </div>
-
-                        <select
-                          value={chartRange}
-                          onChange={(e) => setChartRange(e.target.value as any)}
-                          className="px-2.5 py-1.5 rounded-xl bg-[#07090E] border border-white/5 text-xs font-mono text-zinc-300 focus:outline-none"
-                        >
-                          <option value="Last 14 Days">Last 14 Days</option>
-                          <option value="Last 30 Days">Last 30 Days</option>
-                          <option value="This Month">This Month</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Big Stat Header inside Chart */}
-                    <div className="flex items-baseline justify-between pt-1">
-                      <div>
-                        <div className="text-2xl sm:text-3xl font-extrabold text-white font-mono">
-                          Rs 44,800
-                        </div>
-                        <div className="text-xs font-mono text-emerald-400 flex items-center gap-1">
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                          <span>+18.4% growth vs last 14 days</span>
+                {/* Bottom Row: Cards 05 to 08 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {/* ========================================================================= */}
+                  {/* CARD 05: RECENT ORDERS */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-emerald-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 05 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          05
+                        </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            RECENT ORDERS
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Stay updated with your latest customer orders.
+                          </p>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400">
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-                        <span>Today Rs 44,800</span>
-                      </div>
                     </div>
 
-                    {/* Interactive SVG Line Graph with Area Fill */}
-                    <div className="h-52 w-full pt-2">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 500 140">
-                        <defs>
-                          <linearGradient id="goldArea" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
-                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                          </linearGradient>
-                        </defs>
-
-                        {/* Horizontal Grid lines */}
-                        <line x1="0" y1="20" x2="500" y2="20" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
-                        <line x1="0" y1="60" x2="500" y2="60" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
-                        <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255,255,255,0.04)" strokeDasharray="4 4" />
-
-                        {/* Area Fill */}
-                        <path
-                          d="M0,100 Q40,90 90,85 T180,60 T270,68 T360,45 T430,50 T500,25 L500,140 L0,140 Z"
-                          fill="url(#goldArea)"
-                        />
-
-                        {/* Gold Trend Line */}
-                        <path
-                          d="M0,100 Q40,90 90,85 T180,60 T270,68 T360,45 T430,50 T500,25"
-                          fill="none"
-                          stroke="#fbbf24"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                        />
-
-                        {/* Data Points */}
-                        {[
-                          { cx: 90, cy: 85 },
-                          { cx: 180, cy: 60 },
-                          { cx: 270, cy: 68 },
-                          { cx: 360, cy: 45 },
-                          { cx: 430, cy: 50 },
-                          { cx: 500, cy: 25 },
-                        ].map((pt, i) => (
-                          <circle
-                            key={i}
-                            cx={pt.cx}
-                            cy={pt.cy}
-                            r={i === 5 ? 5 : 4}
-                            fill="#fbbf24"
-                            stroke="#0F131D"
-                            strokeWidth="2"
-                          />
-                        ))}
-                      </svg>
-                    </div>
-
-                    {/* X-Axis Labels */}
-                    <div className="flex justify-between text-[10px] font-mono text-zinc-400 pt-2 border-t border-white/5">
-                      <span>Aug 08</span>
-                      <span>Aug 09</span>
-                      <span>Aug 10</span>
-                      <span>Aug 11</span>
-                      <span>Aug 12</span>
-                      <span>Aug 13</span>
-                      <span>Aug 14</span>
-                      <span>Aug 15</span>
-                      <span>Aug 16</span>
-                      <span>Aug 17</span>
-                      <span>Aug 18</span>
-                      <span>Aug 19</span>
-                      <span className="text-amber-400 font-bold">Aug 21</span>
-                    </div>
-                  </div>
-
-                  {/* Order Breakdown Donut Card */}
-                  <div className="lg:col-span-2.5 rounded-2xl bg-[#0F131D] border border-white/5 p-5 flex flex-col justify-between">
+                    {/* Header Row */}
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-xs text-white">Order Breakdown</h3>
-                      <span className="text-[10px] font-mono text-zinc-400">This Week ▾</span>
+                      <span className="text-xs font-bold text-white">Recent Orders</span>
+                      <button
+                        onClick={() => setActiveNav('orders')}
+                        className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center gap-0.5"
+                      >
+                        <span>View All</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
                     </div>
 
-                    {/* Donut Chart visual */}
-                    <div className="relative flex items-center justify-center my-4">
-                      <svg className="w-32 h-32 -rotate-90">
-                        {/* Background track */}
-                        <circle
-                          cx="64"
-                          cy="64"
-                          r="48"
-                          stroke="rgba(255,255,255,0.05)"
-                          strokeWidth="12"
-                          fill="transparent"
-                        />
-                        {/* Completed segment (Cyan) */}
-                        <circle
-                          cx="64"
-                          cy="64"
-                          r="48"
-                          stroke="#06b6d4"
-                          strokeWidth="12"
-                          strokeDasharray="301.59"
-                          strokeDashoffset="150.79"
-                          strokeLinecap="round"
-                          fill="transparent"
-                        />
-                        {/* Processing segment (Green) */}
-                        <circle
-                          cx="64"
-                          cy="64"
-                          r="48"
-                          stroke="#10b981"
-                          strokeWidth="12"
-                          strokeDasharray="301.59"
-                          strokeDashoffset="225"
-                          strokeLinecap="round"
-                          fill="transparent"
-                        />
-                      </svg>
-                      <div className="absolute flex flex-col items-center">
-                        <span className="text-2xl font-black text-white font-mono">2</span>
-                        <span className="text-[9px] font-mono text-zinc-400 uppercase">Total</span>
+                    {/* 3 Orders List matching Screenshot 1 */}
+                    <div className="space-y-2">
+                      {/* Order 1 */}
+                      <div className="p-2.5 rounded-xl bg-[#070A12] border border-white/5 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold text-white">#PB-00024</span>
+                            <span className="text-xs text-zinc-300">John Doe</span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 font-mono">17 Aug, 10:45 AM</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-mono font-black text-white">Rs 2,499</div>
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold">Completed</span>
+                        </div>
+                      </div>
+
+                      {/* Order 2 */}
+                      <div className="p-2.5 rounded-xl bg-[#070A12] border border-white/5 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold text-white">#PB-00023</span>
+                            <span className="text-xs text-zinc-300">Sarah Smith</span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 font-mono">17 Aug, 09:15 AM</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-mono font-black text-white">Rs 1,499</div>
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold">Completed</span>
+                        </div>
+                      </div>
+
+                      {/* Order 3 */}
+                      <div className="p-2.5 rounded-xl bg-[#070A12] border border-white/5 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold text-white">#PB-00022</span>
+                            <span className="text-xs text-zinc-300">Mike Johnson</span>
+                          </div>
+                          <div className="text-[10px] text-zinc-500 font-mono">16 Aug, 08:20 PM</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-mono font-black text-white">Rs 1,299</div>
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold">Completed</span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Legend */}
-                    <div className="space-y-1.5 text-xs font-mono">
-                      <div className="flex items-center justify-between text-zinc-300">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-cyan-400"></span> Completed
-                        </span>
-                        <strong>1 (50%)</strong>
+                    {/* Footer Tip */}
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                        <ShoppingBag className="w-4 h-4" />
                       </div>
-                      <div className="flex items-center justify-between text-zinc-300">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Processing
-                        </span>
-                        <strong>1 (50%)</strong>
-                      </div>
-                      <div className="flex items-center justify-between text-zinc-400">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-amber-400"></span> Pending
-                        </span>
-                        <span>0 (0%)</span>
-                      </div>
+                      <p className="text-[10px] text-zinc-300 leading-snug">
+                        Monitor recent orders and ensure fast order processing.
+                      </p>
                     </div>
                   </div>
 
-                  {/* Traffic Sources Card */}
-                  <div className="lg:col-span-2.5 rounded-2xl bg-[#0F131D] border border-white/5 p-5 flex flex-col justify-between">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-xs text-white">Traffic Sources</h3>
-                      <span className="text-[10px] font-mono text-zinc-400">This Week ▾</span>
-                    </div>
-
-                    <div className="space-y-3 my-3 text-xs font-mono">
-                      {/* Direct */}
-                      <div>
-                        <div className="flex justify-between text-zinc-300 mb-1">
-                          <span>Direct / URL</span>
-                          <strong className="text-white">52% (1,492)</strong>
-                        </div>
-                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-blue-500 h-full w-[52%] rounded-full"></div>
-                        </div>
-                      </div>
-
-                      {/* TikTok */}
-                      <div>
-                        <div className="flex justify-between text-zinc-300 mb-1">
-                          <span>TikTok Leads & Pixel</span>
-                          <strong className="text-white">28% (832)</strong>
-                        </div>
-                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-purple-500 h-full w-[28%] rounded-full"></div>
-                        </div>
-                      </div>
-
-                      {/* Google */}
-                      <div>
-                        <div className="flex justify-between text-zinc-300 mb-1">
-                          <span>Google Search</span>
-                          <strong className="text-white">14% (481)</strong>
-                        </div>
-                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-emerald-500 h-full w-[14%] rounded-full"></div>
-                        </div>
-                      </div>
-
-                      {/* Referrals */}
-                      <div>
-                        <div className="flex justify-between text-zinc-300 mb-1">
-                          <span>Affiliate Referrals</span>
-                          <strong className="text-white">6% (172)</strong>
-                        </div>
-                        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                          <div className="bg-amber-400 h-full w-[6%] rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setActiveNav('analytics')}
-                      className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-medium text-zinc-200 hover:text-white transition flex items-center justify-center gap-1.5"
-                    >
-                      <span>View Full Analytics</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Lower Grid: Top Selling Products + Recent Orders + System Health */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  {/* Top Selling Products */}
-                  <div className="lg:col-span-4 rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-4 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Flame className="w-4 h-4 text-amber-400" />
-                          <h3 className="font-bold text-xs text-white">Top Selling Products</h3>
-                        </div>
-                        <span className="text-[10px] font-mono text-zinc-400">This Week ▾</span>
-                      </div>
-
-                      <div className="space-y-3">
-                        {/* Item 1 */}
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-mono font-bold text-xs text-blue-400">
-                              #1 PL
-                            </div>
-                            <div>
-                              <div className="text-xs font-semibold text-white truncate max-w-[140px]">
-                                PlayStation Gift Card - $50 (USA)
-                              </div>
-                              <div className="text-[10px] font-mono text-amber-400">Sales: 12 🔥</div>
-                            </div>
-                          </div>
-                          <div className="text-xs font-mono font-bold text-white">Rs 24,000</div>
-                        </div>
-
-                        {/* Item 2 */}
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center font-mono font-bold text-xs text-cyan-400">
-                              #2 PL
-                            </div>
-                            <div>
-                              <div className="text-xs font-semibold text-white truncate max-w-[140px]">
-                                PlayStation Gift Card - $25 (USA)
-                              </div>
-                              <div className="text-[10px] font-mono text-amber-400">Sales: 8 🔥</div>
-                            </div>
-                          </div>
-                          <div className="text-xs font-mono font-bold text-white">Rs 14,000</div>
-                        </div>
-
-                        {/* Item 3 */}
-                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-rose-600/20 border border-rose-500/30 flex items-center justify-center font-mono font-bold text-xs text-rose-400">
-                              #3 NE
-                            </div>
-                            <div>
-                              <div className="text-xs font-semibold text-white truncate max-w-[140px]">
-                                Netflix Premium 1 Month
-                              </div>
-                              <div className="text-[10px] font-mono text-zinc-400">Sales: 5</div>
-                            </div>
-                          </div>
-                          <div className="text-xs font-mono font-bold text-white">Rs 6,800</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setActiveNav('products')}
-                      className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-medium text-zinc-200 hover:text-white transition flex items-center justify-center gap-1.5"
-                    >
-                      <span>View All Products</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Recent Orders List */}
-                  <div className="lg:col-span-5 rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-3 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <ShoppingBag className="w-4 h-4 text-emerald-400" />
-                          <h3 className="font-bold text-xs text-white">Recent Orders</h3>
-                        </div>
-                        <button
-                          onClick={() => setActiveNav('orders')}
-                          className="text-[11px] font-mono text-amber-400 hover:underline flex items-center gap-0.5"
-                        >
-                          <span>View All</span>
-                          <ChevronRight className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-2">
-                        {orders.map((ord) => (
-                          <div
-                            key={ord.id}
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition text-xs"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className={`w-7 h-7 rounded-full bg-gradient-to-tr ${ord.avatarColor} flex items-center justify-center text-white font-bold font-mono text-[10px] shrink-0`}
-                              >
-                                {ord.initials}
-                              </div>
-                              <div>
-                                <div className="font-medium text-white flex items-center gap-2">
-                                  <span>{ord.customer}</span>
-                                  <span className="text-[10px] font-mono text-zinc-400">
-                                    {ord.id}
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-zinc-400 font-mono">
-                                  {ord.date}, {ord.time}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="text-right">
-                              <div className="font-mono font-bold text-white">
-                                Rs {ord.amount.toLocaleString()}
-                              </div>
-                              <span
-                                className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-mono ${
-                                  ord.status === 'Completed'
-                                    ? 'bg-emerald-500/10 text-emerald-400'
-                                    : 'bg-cyan-500/10 text-cyan-400'
-                                }`}
-                              >
-                                {ord.status}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* System Health Card */}
-                  <div className="lg:col-span-3 rounded-2xl bg-[#0F131D] border border-white/5 p-5 flex flex-col justify-between space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <Activity className="w-4 h-4 text-emerald-400" />
-                          <h3 className="font-bold text-xs text-white">System Health</h3>
-                        </div>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-mono">
-                          ● All Operational
+                  {/* ========================================================================= */}
+                  {/* CARD 06: SYSTEM HEALTH */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-teal-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 06 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-teal-600 text-white font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          06
                         </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            SYSTEM HEALTH
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Monitor your system performance in real-time.
+                          </p>
+                        </div>
                       </div>
+                    </div>
 
-                      {/* 100% HEALTHY Circular Gauge with ECG Pulse */}
-                      <div className="relative flex items-center justify-center my-3">
-                        <svg className="w-28 h-28 -rotate-90">
+                    <div className="text-xs font-bold text-white">System Health</div>
+
+                    {/* Circular Gauge + 100% Healthy */}
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#070A12] border border-white/5">
+                      <div className="relative flex items-center justify-center w-24 h-24 shrink-0">
+                        <svg className="w-24 h-24 -rotate-90">
                           <circle
-                            cx="56"
-                            cy="56"
-                            r="44"
+                            cx="48"
+                            cy="48"
+                            r="36"
                             stroke="rgba(255,255,255,0.05)"
                             strokeWidth="8"
                             fill="transparent"
                           />
                           <circle
-                            cx="56"
-                            cy="56"
-                            r="44"
+                            cx="48"
+                            cy="48"
+                            r="36"
                             stroke="#10b981"
                             strokeWidth="8"
-                            strokeDasharray="276.46"
+                            strokeDasharray="226.19"
                             strokeDashoffset="0"
                             strokeLinecap="round"
                             fill="transparent"
                           />
                         </svg>
                         <div className="absolute flex flex-col items-center">
-                          <span className="text-xl font-black text-white font-mono">100%</span>
-                          <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider">
-                            HEALTHY
-                          </span>
+                          <span className="text-base font-black text-white font-mono leading-none">100%</span>
+                          <span className="text-[8px] font-mono text-emerald-400 font-bold uppercase mt-0.5">Healthy</span>
+                          {/* Heartbeat pulse */}
+                          <div className="w-8 h-2 mt-1">
+                            <svg className="w-full h-full" viewBox="0 0 40 10">
+                              <path d="M0,5 L15,5 L18,1 L22,9 L25,5 L40,5" fill="none" stroke="#10b981" strokeWidth="1.5" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Checklist */}
-                      <div className="space-y-1.5 text-xs font-mono">
+                      {/* Status Checklist */}
+                      <div className="space-y-1.5 text-[11px] font-mono flex-1">
                         <div className="flex items-center justify-between text-zinc-300">
                           <span className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Web Server
                           </span>
-                          <span className="text-emerald-400 text-[10px]">Online</span>
+                          <span className="text-emerald-400 text-[10px]">Operational</span>
                         </div>
                         <div className="flex items-center justify-between text-zinc-300">
                           <span className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Database
                           </span>
-                          <span className="text-emerald-400 text-[10px]">Online</span>
+                          <span className="text-emerald-400 text-[10px]">Operational</span>
                         </div>
                         <div className="flex items-center justify-between text-zinc-300">
                           <span className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Payment Gateway
                           </span>
-                          <span className="text-emerald-400 text-[10px]">Online</span>
+                          <span className="text-emerald-400 text-[10px]">Operational</span>
                         </div>
                         <div className="flex items-center justify-between text-zinc-300">
                           <span className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Email Service
                           </span>
-                          <span className="text-emerald-400 text-[10px]">Online</span>
-                        </div>
-                        <div className="flex items-center justify-between text-zinc-300">
-                          <span className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> IPTV Services
-                          </span>
-                          <span className="text-emerald-400 text-[10px]">Online</span>
+                          <span className="text-emerald-400 text-[10px]">Operational</span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Footer Tip */}
+                    <div className="p-3 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] text-zinc-300 leading-snug">
+                        All systems are running smoothly. Great job!
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ========================================================================= */}
+                  {/* CARD 07: QUICK ACTIONS & SHORTCUTS */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-yellow-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 07 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-yellow-500 text-black font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          07
+                        </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            QUICK ACTIONS & SHORTCUTS
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Access important actions and tools in one click.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Top Action Bar: Storefront, Quick Actions, Bell 8 */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={onBackToStorefront}
+                        className="flex-1 py-2 px-3 rounded-xl bg-[#FFC107] hover:bg-[#ffcd38] text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-md"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>Storefront</span>
+                      </button>
+
+                      <button
+                        onClick={() => setShowQuickAddMenu(!showQuickAddMenu)}
+                        className="py-2 px-3 rounded-xl bg-[#070A12] hover:bg-white/5 border border-white/10 text-zinc-300 text-xs font-semibold flex items-center gap-1 transition"
+                      >
+                        <span>Quick Actions</span>
+                        <ChevronDown className="w-3 h-3" />
+                      </button>
+
+                      <div className="relative p-2 rounded-xl bg-[#070A12] border border-white/10 text-zinc-300">
+                        <Bell className="w-3.5 h-3.5" />
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 text-black font-mono font-black text-[9px] flex items-center justify-center">
+                          8
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 6 Action Shortcut Buttons (2 Columns x 3 Rows) */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Add Product */}
+                      <button
+                        onClick={() => setShowAddProductModal(true)}
+                        className="p-2.5 rounded-xl bg-[#070A12] hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/30 flex items-center gap-2 transition text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                          <Plus className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white leading-tight">Add Product</div>
+                          <div className="text-[9px] text-zinc-400">Create new product</div>
+                        </div>
+                      </button>
+
+                      {/* Create Order */}
+                      <button
+                        onClick={() => triggerToast('Opening order creation modal')}
+                        className="p-2.5 rounded-xl bg-[#070A12] hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 flex items-center gap-2 transition text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white leading-tight">Create Order</div>
+                          <div className="text-[9px] text-zinc-400">Add new order</div>
+                        </div>
+                      </button>
+
+                      {/* View Reports */}
+                      <button
+                        onClick={() => setActiveNav('reports')}
+                        className="p-2.5 rounded-xl bg-[#070A12] hover:bg-purple-500/10 border border-white/5 hover:border-purple-500/30 flex items-center gap-2 transition text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                          <BarChart3 className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white leading-tight">View Reports</div>
+                          <div className="text-[9px] text-zinc-400">Business insights</div>
+                        </div>
+                      </button>
+
+                      {/* Manage Users */}
+                      <button
+                        onClick={() => setActiveNav('customers')}
+                        className="p-2.5 rounded-xl bg-[#070A12] hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/30 flex items-center gap-2 transition text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                          <Users2 className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white leading-tight">Manage Users</div>
+                          <div className="text-[9px] text-zinc-400">Team management</div>
+                        </div>
+                      </button>
+
+                      {/* Discounts */}
+                      <button
+                        onClick={() => setActiveNav('discounts')}
+                        className="p-2.5 rounded-xl bg-[#070A12] hover:bg-pink-500/10 border border-white/5 hover:border-pink-500/30 flex items-center gap-2 transition text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                          <Tag className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white leading-tight">Discounts</div>
+                          <div className="text-[9px] text-zinc-400">Create offers</div>
+                        </div>
+                      </button>
+
+                      {/* Settings */}
+                      <button
+                        onClick={() => setActiveNav('settings')}
+                        className="p-2.5 rounded-xl bg-[#070A12] hover:bg-cyan-500/10 border border-white/5 hover:border-cyan-500/30 flex items-center gap-2 transition text-left group"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                          <Settings className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white leading-tight">Settings</div>
+                          <div className="text-[9px] text-zinc-400">System preferences</div>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Footer Tip */}
+                    <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-yellow-500/20 text-yellow-400 flex items-center justify-center shrink-0">
+                        <Zap className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] text-zinc-300 leading-snug">
+                        Save time with quick access to your most used features.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ========================================================================= */}
+                  {/* CARD 08: SMART ADMIN EXPERIENCE */}
+                  {/* ========================================================================= */}
+                  <div className="rounded-2xl bg-[#0B0F19] border border-sky-500/30 p-5 space-y-4 shadow-xl flex flex-col justify-between">
+                    {/* Header Bar with 08 Badge */}
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-lg bg-sky-600 text-white font-mono font-extrabold text-xs flex items-center justify-center shadow-md">
+                          08
+                        </span>
+                        <div>
+                          <h2 className="text-xs font-extrabold text-white uppercase tracking-wider font-mono">
+                            SMART ADMIN EXPERIENCE
+                          </h2>
+                          <p className="text-[10px] text-zinc-400">
+                            Everything you need for a smarter admin experience.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Cybernetic Illustration Card */}
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-blue-950/40 via-[#070A12] to-cyan-950/30 border border-sky-500/20 relative overflow-hidden flex items-center justify-center h-24">
+                      {/* Glow FX */}
+                      <div className="absolute -top-10 -right-10 w-24 h-24 bg-sky-500/20 rounded-full blur-xl pointer-events-none"></div>
+                      <div className="flex items-center gap-4 z-10">
+                        <div className="p-3 rounded-2xl bg-blue-600/20 border border-blue-400/40 text-blue-300 shadow-[0_0_20px_rgba(59,130,246,0.3)] animate-pulse">
+                          <LayoutDashboard className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            <span>PlayBeat AI Engine</span>
+                          </div>
+                          <div className="text-[10px] text-zinc-400 font-mono">Real-time Analytics v4.2</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4 Feature Points matching Screenshot 1 */}
+                    <div className="space-y-1.5 text-[11px]">
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <div className="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                          <LayoutDashboard className="w-3 h-3" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-white">Modern & Clean UI:</span> Easy to navigate and visually appealing
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <div className="w-5 h-5 rounded-md bg-teal-500/20 text-teal-400 flex items-center justify-center shrink-0">
+                          <TrendingUp className="w-3 h-3" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-white">Real-time Analytics:</span> Live data to make better decisions
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <div className="w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                          <ShieldCheck className="w-3 h-3" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-white">Secure & Reliable:</span> Enterprise-grade security you can trust
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-zinc-300">
+                        <div className="w-5 h-5 rounded-md bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                          <Zap className="w-3 h-3" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-white">Performance Focused:</span> Optimized for speed and efficiency
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Tip */}
+                    <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <p className="text-[10px] text-zinc-300 leading-snug">
+                        Designed for productivity, built for growth.
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Quick Actions Shortcuts Row */}
-                <div className="rounded-2xl bg-[#0F131D] border border-white/5 p-5 space-y-3">
-                  <div>
-                    <h3 className="font-bold text-sm text-white">Quick Actions</h3>
-                    <p className="text-xs text-zinc-400">Everything you need, one click away</p>
+                {/* Bottom Full-Width Footer Banner matching Screenshot 1 */}
+                <div className="rounded-2xl bg-gradient-to-r from-[#0B0F19] via-[#111728] to-[#0B0F19] border border-white/10 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src="/playbeat-logo.png"
+                      alt="PlayBeat Arena"
+                      className="h-7 w-auto object-contain drop-shadow-[0_0_10px_rgba(255,193,7,0.4)]"
+                    />
+                    <div className="text-xs sm:text-sm font-semibold text-zinc-300">
+                      Everything you need to manage your digital business – all in one powerful dashboard.
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div className="flex items-center gap-3">
                     <button
-                      onClick={() => setShowAddProductModal(true)}
-                      className="p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 flex items-center gap-2.5 transition text-xs text-zinc-200 hover:text-white"
+                      onClick={() => setShowCsvImporterModal(true)}
+                      className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition"
                     >
-                      <Plus className="w-4 h-4 text-emerald-400" />
-                      <span className="font-medium">Add Product</span>
+                      <FileSpreadsheet className="w-3.5 h-3.5" />
+                      <span>CSV / DB Importer</span>
                     </button>
 
                     <button
-                      onClick={() => setShowCampaignModal(true)}
-                      className="p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 flex items-center gap-2.5 transition text-xs text-zinc-200 hover:text-white"
+                      onClick={() => triggerToast('PlayBeat Admin Console v4.2 Active')}
+                      className="px-4 py-2 rounded-xl bg-[#FFC107] hover:bg-[#ffcd38] text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-400/20 transition"
                     >
-                      <Send className="w-4 h-4 text-purple-400" />
-                      <span className="font-medium">Send Campaign</span>
-                    </button>
-
-                    <button
-                      onClick={onBackToStorefront}
-                      className="p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 flex items-center gap-2.5 transition text-xs text-zinc-200 hover:text-white"
-                    >
-                      <Store className="w-4 h-4 text-cyan-400" />
-                      <span className="font-medium">View Store</span>
-                    </button>
-
-                    <button
-                      onClick={() => setActiveNav('orders')}
-                      className="p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 flex items-center gap-2.5 transition text-xs text-zinc-200 hover:text-white"
-                    >
-                      <ShoppingBag className="w-4 h-4 text-amber-400" />
-                      <span className="font-medium">Manage Orders</span>
-                    </button>
-
-                    <button
-                      onClick={() => setShowSupportModal(true)}
-                      className="p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 flex items-center gap-2.5 transition text-xs text-zinc-200 hover:text-white"
-                    >
-                      <Headphones className="w-4 h-4 text-teal-400" />
-                      <span className="font-medium">Support Tickets</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Promo Card: Boost Your Sales with PlayBeat Tools! */}
-                <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#121622] to-amber-500/5 border border-amber-500/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-5 relative overflow-hidden shadow-xl">
-                  <div className="space-y-1.5 text-center sm:text-left z-10">
-                    <div className="flex items-center justify-center sm:justify-start gap-2">
-                      <div className="w-6 h-6 rounded-full bg-amber-400 text-black font-extrabold flex items-center justify-center text-[10px]">
+                      <div className="w-4 h-4 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center text-[8px]">
                         ▶
                       </div>
-                      <span className="font-extrabold text-sm text-white">playbeat</span>
-                    </div>
-                    <h3 className="text-lg font-black text-white">
-                      Boost Your Sales with <span className="text-amber-400">PlayBeat Tools!</span>
-                    </h3>
-                    <p className="text-xs text-zinc-300 max-w-xl">
-                      Launch AI-powered campaigns, automate upsells, and convert visitors into loyal customers.
-                    </p>
+                      <span>PlayBeat Admin Dashboard</span>
+                    </button>
                   </div>
-
-                  <button
-                    onClick={() => setShowCampaignModal(true)}
-                    className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs transition shadow-lg shadow-amber-400/20 flex items-center gap-2 shrink-0 z-10"
-                  >
-                    <span>Launch Campaign</span>
-                    <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-                  </button>
                 </div>
               </div>
             )}
@@ -1432,13 +1744,23 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
                       <option value="Gift Cards">Gift Cards</option>
                     </select>
 
-                    <button
-                      onClick={() => setShowAddProductModal(true)}
-                      className="px-3.5 py-2 rounded-xl bg-amber-400 text-black font-semibold text-xs flex items-center gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>New Product</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setShowCsvImporterModal(true)}
+                        className="px-3 py-2 rounded-xl bg-[#121622] hover:bg-[#181d2d] border border-amber-400/30 text-amber-300 font-semibold text-xs flex items-center gap-1.5 transition shadow-sm"
+                      >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Import Products (CSV / DB)</span>
+                      </button>
+
+                      <button
+                        onClick={() => setShowAddProductModal(true)}
+                        className="px-3.5 py-2 rounded-xl bg-amber-400 text-black font-semibold text-xs flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>New Product</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1913,6 +2235,19 @@ export const AdminInsightsView: React.FC<AdminInsightsViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* CSV & MongoDB Cloud Importer Modal */}
+      <CsvImporterModal
+        isOpen={showCsvImporterModal}
+        onClose={() => setShowCsvImporterModal(false)}
+        existingProducts={products}
+        onPublishProducts={(newProducts, mode, syncToMongo) => {
+          if (onImportProducts) {
+            onImportProducts(newProducts, mode, syncToMongo)
+          }
+          triggerToast(`Published ${newProducts.length} products to store catalog!`)
+        }}
+      />
     </div>
   )
 }

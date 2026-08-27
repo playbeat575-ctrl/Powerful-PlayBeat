@@ -5,7 +5,7 @@ import { CategoryNav } from './components/CategoryNav'
 import { ProductCard } from './components/ProductCard'
 import { ProjectorSpecMatrix } from './components/ProjectorSpecMatrix'
 import { TrustFeatures } from './components/TrustFeatures'
-import { SubscriptionPlans } from './components/SubscriptionPlans'
+import { SocialSignUpSection } from './components/SocialSignUpSection'
 import { QuickViewModal } from './components/QuickViewModal'
 import { CartDrawer } from './components/CartDrawer'
 import { WishlistDrawer } from './components/WishlistDrawer'
@@ -15,11 +15,45 @@ import { Footer } from './components/Footer'
 import { AdminInsightsView } from './components/AdminInsightsView'
 import { PRODUCTS_CATALOG as INITIAL_PRODUCTS } from './data/products'
 import { Product, CurrencyCode, CartItem, ProductVariant } from './types'
-import { Search, ArrowUpDown, CheckCircle, ArrowRight, Sparkles } from 'lucide-react'
+import { Search, ArrowUpDown, CheckCircle, ArrowRight, Sparkles, LayoutDashboard, Store } from 'lucide-react'
 
 export function App() {
   // Navigation & View Mode
-  const [viewMode, setViewMode] = useState<'storefront' | 'admin'>('storefront')
+  const [viewMode, setViewMode] = useState<'storefront' | 'admin'>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase()
+      if (hash.includes('admin')) return 'admin'
+    }
+    return 'storefront'
+  })
+
+  // Keyboard shortcut (Alt+A for Admin, Alt+S for Storefront)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.altKey || (e.ctrlKey && e.shiftKey)) && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault()
+        setViewMode((prev) => (prev === 'admin' ? 'storefront' : 'admin'))
+      } else if ((e.altKey || (e.ctrlKey && e.shiftKey)) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault()
+        setViewMode('storefront')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Sync hash with view mode
+  useEffect(() => {
+    if (viewMode === 'admin') {
+      if (window.location.hash !== '#admin') {
+        window.history.replaceState(null, '', '#admin')
+      }
+    } else {
+      if (window.location.hash === '#admin') {
+        window.history.replaceState(null, '', '#storefront')
+      }
+    }
+  }, [viewMode])
 
   // User State
   const [user, setUser] = useState<{ name: string; email: string } | null>(() => {
@@ -155,6 +189,24 @@ export function App() {
       prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))
     )
     showToast(`Inventory updated for SKU #${id}`)
+  }
+
+  // Import products from CSV / MongoDB Cloud
+  const handleImportProducts = (
+    newProducts: Product[],
+    mode: 'merge' | 'replace'
+  ) => {
+    if (mode === 'replace') {
+      setProducts(newProducts)
+    } else {
+      setProducts((prev) => {
+        const map = new Map<string, Product>()
+        prev.forEach((p) => map.set(p.sku || p.id, p))
+        newProducts.forEach((p) => map.set(p.sku || p.id, p))
+        return Array.from(map.values())
+      })
+    }
+    showToast(`Catalog updated with ${newProducts.length} imported products`)
   }
 
   // Add to Cart Handler
@@ -358,6 +410,7 @@ export function App() {
           onBackToStorefront={() => setViewMode('storefront')}
           onQuickViewProduct={(p) => setQuickViewProduct(p)}
           onUpdateProductStock={handleUpdateProductStock}
+          onImportProducts={handleImportProducts}
         />
       ) : (
         <>
@@ -536,13 +589,13 @@ export function App() {
               </div>
             )}
 
-            {/* Subscription Membership Tiers Section */}
-            {(selectedCategory === 'all' || selectedCategory === 'Subscriptions') && !searchQuery && (
-              <SubscriptionPlans
-                currency={selectedCurrency}
-                onSelectPlan={(name, price) => {
-                  showToast(`Selected ${name} subscription plan`)
-                  setIsCartOpen(true)
+            {/* Social Sign Up Section (Google, Facebook, TikTok, Instagram) */}
+            {!searchQuery && (
+              <SocialSignUpSection
+                user={user}
+                onSocialAuth={(provider, newUser) => {
+                  setUser(newUser)
+                  showToast(`Successfully signed up via ${provider}! Welcome to PlayBeat.`)
                 }}
               />
             )}
@@ -629,6 +682,37 @@ export function App() {
           }}
         />
       )}
+      {/* Floating Quick Mode Switcher Dock */}
+      <aside aria-label="View mode switcher" className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 p-1.5 rounded-full bg-[#060B1E]/90 backdrop-blur-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+        <button
+          id="mode-switch-storefront-btn"
+          onClick={() => setViewMode('storefront')}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            viewMode === 'storefront'
+              ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 shadow-md scale-105'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+          title="Switch to Storefront (Alt+S)"
+        >
+          <Store className="w-3.5 h-3.5" />
+          <span>Storefront</span>
+        </button>
+
+        <button
+          id="mode-switch-admin-btn"
+          onClick={() => setViewMode('admin')}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            viewMode === 'admin'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md scale-105'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+          title="Switch to Admin Insights & Importer (Alt+A)"
+        >
+          <LayoutDashboard className="w-3.5 h-3.5" />
+          <span>Admin Console</span>
+          <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        </button>
+      </aside>
     </div>
   )
 }
