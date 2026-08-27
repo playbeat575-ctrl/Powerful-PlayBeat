@@ -8,13 +8,12 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-10">
           {/* Brand Col */}
           <div className="md:col-span-4 space-y-3.5">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center font-black text-slate-950 font-mono text-xs shadow-md">
-                PB
-              </div>
-              <span className="font-bold text-lg text-white tracking-tight font-sans">
-                play<span className="text-yellow-400 font-serif italic">beat</span>.pro
-              </span>
+            <div className="flex items-center gap-3">
+              <img
+                src="/playbeat-logo.png"
+                alt="PlayBeat"
+                className="h-10 w-auto object-contain drop-shadow-[0_0_12px_rgba(255,193,7,0.4)]"
+              />
             </div>
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm font-sans">
               Your premier digital license marketplace and official partner for Magcubic 4K smart projectors. Instant 24/7 automated delivery worldwide.

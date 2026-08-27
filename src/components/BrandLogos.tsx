@@ -1,4 +1,5 @@
 import React from 'react'
+import { HolographicGlobe } from './HolographicGlobe'
 
 export const NetflixArtwork: React.FC<{ className?: string }> = ({ className = 'w-full h-full' }) => (
   <div className={`relative flex items-center justify-center bg-[#070D22] overflow-hidden ${className}`}>
@@ -107,124 +108,11 @@ export const XboxArtwork: React.FC<{ className?: string }> = ({ className = 'w-f
   </div>
 )
 
+
 export const PlayBeatHeroVisual: React.FC = () => {
   return (
-    <div className="relative w-full aspect-square max-w-[440px] mx-auto flex items-center justify-center">
-      {/* Outer Water/Liquid Golden Energy Aura */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,193,7,0.22)_0%,_rgba(56,189,248,0.18)_45%,_transparent_72%)] blur-2xl animate-pulse"></div>
-
-      {/* Orbiting Gold Wave Net */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 400">
-        <defs>
-          <linearGradient id="goldGradientRing" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFFBEB" />
-            <stop offset="40%" stopColor="#FFC107" />
-            <stop offset="80%" stopColor="#FF9800" />
-            <stop offset="100%" stopColor="#C0C6D4" />
-          </linearGradient>
-          <linearGradient id="blueGlowWave" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="#2563EB" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#FFC107" stopOpacity="0.6" />
-          </linearGradient>
-        </defs>
-
-        {/* Orbit Rings (3D Ellipses) */}
-        <ellipse
-          cx="200"
-          cy="200"
-          rx="180"
-          ry="65"
-          fill="none"
-          stroke="url(#goldGradientRing)"
-          strokeWidth="3"
-          transform="rotate(-25 200 200)"
-          className="drop-shadow-[0_0_15px_rgba(255,193,7,0.5)]"
-        />
-        <ellipse
-          cx="200"
-          cy="200"
-          rx="170"
-          ry="55"
-          fill="none"
-          stroke="#C0C6D4"
-          strokeWidth="1.2"
-          strokeDasharray="6 4"
-          transform="rotate(35 200 200)"
-          opacity="0.6"
-        />
-
-        {/* Dynamic Water-Flow Energy Wave Lines at the base */}
-        <path
-          d="M30,300 Q100,240 200,290 T370,300"
-          fill="none"
-          stroke="url(#blueGlowWave)"
-          strokeWidth="2.5"
-          className="animate-pulse"
-        />
-        <path
-          d="M50,320 Q150,270 250,330 T360,310"
-          fill="none"
-          stroke="#FFC107"
-          strokeWidth="1.5"
-          strokeDasharray="4 2"
-          opacity="0.8"
-        />
-        <path
-          d="M70,340 Q180,300 280,350 T340,330"
-          fill="none"
-          stroke="#38BDF8"
-          strokeWidth="1"
-          opacity="0.5"
-        />
-
-        {/* Orbiting Golden Floating Spheres */}
-        <circle cx="340" cy="165" r="9" fill="url(#goldGradientRing)" className="drop-shadow-[0_0_12px_#FFC107]" />
-        <circle cx="260" cy="270" r="7" fill="url(#goldGradientRing)" className="drop-shadow-[0_0_10px_#FFC107]" />
-        <circle cx="65" cy="220" r="5" fill="#FFFBEB" className="drop-shadow-[0_0_8px_#FFF]" />
-      </svg>
-
-      {/* Main 3D Metallic Ring with PlayBeat Gold Triangle */}
-      <div className="relative z-10 w-44 h-44 sm:w-52 sm:h-52 rounded-full p-[5px] bg-gradient-to-tr from-[#94A3B8] via-[#F8FAFC] to-[#FFC107] shadow-[0_0_50px_rgba(255,193,7,0.45),inset_0_0_20px_rgba(255,255,255,0.4)] flex items-center justify-center group cursor-pointer hover:scale-105 transition-all duration-500">
-        {/* Dark Metallic Inner Ring */}
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0B1220] via-[#0F1A2E] to-[#040816] border-2 border-yellow-400/40 flex items-center justify-center relative overflow-hidden shadow-inner">
-          {/* Inner Light Sheen */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-yellow-400/15 to-transparent"></div>
-
-          {/* Golden 3D Triangular Play Icon */}
-          <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center drop-shadow-[0_0_25px_rgba(255,193,7,0.9)]">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-              <defs>
-                <linearGradient id="playGoldFace" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FFFBEB" />
-                  <stop offset="35%" stopColor="#FFD54F" />
-                  <stop offset="70%" stopColor="#FFC107" />
-                  <stop offset="100%" stopColor="#FF8F00" />
-                </linearGradient>
-                <linearGradient id="playGoldEdge" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#FFE082" />
-                  <stop offset="100%" stopColor="#E65100" />
-                </linearGradient>
-              </defs>
-              {/* Rounded 3D Play Triangle */}
-              <polygon
-                points="28,15 85,50 28,85"
-                fill="url(#playGoldFace)"
-                stroke="url(#playGoldEdge)"
-                strokeWidth="3.5"
-                strokeLinejoin="round"
-              />
-              <polygon
-                points="33,26 73,50 33,74"
-                fill="none"
-                stroke="#FFFFFF"
-                strokeWidth="1.5"
-                opacity="0.6"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
+    <div className="relative w-full aspect-square max-w-[480px] mx-auto flex items-center justify-center">
+      <HolographicGlobe />
     </div>
   )
 }

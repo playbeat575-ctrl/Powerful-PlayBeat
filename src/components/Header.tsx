@@ -98,31 +98,20 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-[#060B1E]/95 border-b border-slate-400/10 shadow-2xl transition-all">
       {/* Main Top Header Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-        {/* PlayBeat Logo (Matching Screenshot 1) */}
+        {/* PlayBeat Logo (Official 3D Chrome & Gold Brand Asset) */}
         <div
           id="header-brand-logo"
           onClick={() => onSelectCategory('all')}
-          className="flex items-center gap-3 cursor-pointer group shrink-0"
+          className="flex items-center cursor-pointer group shrink-0"
         >
-          {/* Logo Mark: Play symbol in shiny dual-orbit ring */}
-          <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-[#142352] to-[#080E1C] border border-yellow-400/50 flex items-center justify-center shadow-[0_0_18px_rgba(255,193,7,0.3)] group-hover:scale-105 transition-transform duration-300">
-            {/* Ambient Water Sheen */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-yellow-400/20 to-sky-400/15 rounded-2xl"></div>
-            {/* Metallic Gold Triangle Icon */}
-            <svg viewBox="0 0 40 40" className="w-6 h-6 relative z-10 drop-shadow-[0_0_8px_#FFC107]">
-              <polygon points="13,8 32,20 13,32" fill="#FFC107" stroke="#FFE082" strokeWidth="1.5" />
-            </svg>
-          </div>
-
-          <div>
-            <div className="flex items-baseline">
-              <span className="font-sans font-black text-2xl tracking-tight text-white">
-                play<span className="text-[#FFC107] font-serif italic font-extrabold ml-0.5">beat</span>
-              </span>
-            </div>
-            <div className="text-[8.5px] tracking-[0.25em] font-mono font-bold uppercase text-[#FFC107] -mt-1 block drop-shadow-[0_0_6px_rgba(255,193,7,0.4)]">
-              DIGITAL PRODUCTS
-            </div>
+          <div className="relative">
+            {/* Subtle Gold Aura Glow on hover */}
+            <div className="absolute -inset-1 bg-yellow-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            <img
+              src="/playbeat-logo.png"
+              alt="PlayBeat"
+              className="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,193,7,0.35)] group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(255,193,7,0.7)] transition-all duration-300"
+            />
           </div>
         </div>
 

@@ -36,10 +36,17 @@ export function App() {
 
   // Core Product Catalog State
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('playbeat_products_catalog_v2')
+    const saved = localStorage.getItem('playbeat_products_catalog_v3')
     if (saved) {
       try {
-        return JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        const seen = new Set<string>()
+        const unique = parsed.filter((item: Product) => {
+          if (!item || !item.id || seen.has(item.id)) return false
+          seen.add(item.id)
+          return true
+        })
+        return unique.length > 0 ? unique : INITIAL_PRODUCTS
       } catch {
         return INITIAL_PRODUCTS
       }
@@ -107,7 +114,7 @@ export function App() {
 
   // Persist Products Catalog
   useEffect(() => {
-    localStorage.setItem('playbeat_products_catalog_v2', JSON.stringify(products))
+    localStorage.setItem('playbeat_products_catalog_v3', JSON.stringify(products))
   }, [products])
 
   // Persist Currency
@@ -399,7 +406,7 @@ export function App() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {popularProducts.map((prod) => (
                     <ProductCard
-                      key={prod.id}
+                      key={`popular-${prod.id}`}
                       product={prod}
                       currency={selectedCurrency}
                       onAddToCart={handleAddToCart}
@@ -516,7 +523,7 @@ export function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredProducts.map((product) => (
                   <ProductCard
-                    key={product.id}
+                    key={`catalog-${product.id}`}
                     product={product}
                     currency={selectedCurrency}
                     onAddToCart={handleAddToCart}
